@@ -34,23 +34,23 @@ function parseHeader(header) {
   let type = getType(header);
   let toReturn = {
     messageType: type,
-    priority: (header >> BigInt(28)) & BigInt(5),
-    isService: (header >> BigInt(7)) & n1,
-    sourceNodeID: header & n127
+    priority: Number((header >> BigInt(28)) & BigInt(5)),
+    isService: Number((header >> BigInt(7)) & n1),
+    sourceNodeID: Number(header & n127)
   };
   toReturn.messageTypeDescription = getMessageTypeLabel(type);
   switch (type) {
     case ANONYMOUS_MESSAGE_FRAME:
-      toReturn.messageTypeID = (header >> BigInt(8)) & n65535;
+      toReturn.messageTypeID = Number((header >> BigInt(8)) & n65535);
       break;
     case MESSAGE_FRAME:
-      toReturn.discriminator = (header >> BigInt(10)) & BigInt(16383);
-      toReturn.messageTypeID = (header >> BigInt(8)) & n3;
+      toReturn.discriminator = Number((header >> BigInt(10)) & BigInt(16383));
+      toReturn.messageTypeID = Number((header >> BigInt(8)) & n3);
       break;
     case SERVICE_FRAME:
-      toReturn.serviceTypeID = (header >> BigInt(16)) & n255;
-      toReturn.isRequest = (header >> BigInt(15)) & n1;
-      toReturn.destinationNodeID = (header >> BigInt(8)) & n127;
+      toReturn.serviceTypeID = Number((header >> BigInt(16)) & n255);
+      toReturn.isRequest = Number((header >> BigInt(15)) & n1);
+      toReturn.destinationNodeID = Number((header >> BigInt(8)) & n127);
       break;
     default:
   }
