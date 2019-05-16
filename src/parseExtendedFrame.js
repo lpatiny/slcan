@@ -16,6 +16,7 @@ function parseExtendedFrame(string) {
   let result = parseHeader(header);
   result.data = data;
   result.dataLength = dataLength;
+  result = Object.assign(result, parsePayload(data));
   console.log(result);
   return result;
 }
@@ -70,4 +71,12 @@ function getMessageTypeLabel(messageType) {
   return '';
 }
 
-function parsePayload(data) {}
+function parsePayload(data) {
+  let tailByte = Number(`0x${data.substring(data.length - 2)}`);
+  return {
+    startTransfer: tailByte >> 7,
+    endTransfer: (tailByte >> 6) & 1,
+    toggleBit: (tailByte >> 5) & 1,
+    transferID: tailByte & 31
+  };
+}
