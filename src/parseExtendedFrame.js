@@ -2,14 +2,6 @@
 
 const debug = require('debug')('slcan.parseExtendedFrame');
 
-const n0 = BigInt(0);
-const n1 = BigInt(1);
-const n3 = BigInt(3);
-const n127 = BigInt(127);
-const n128 = BigInt(128);
-const n255 = BigInt(255);
-const n65535 = BigInt(65535);
-
 const MESSAGE_FRAME = 1;
 const ANONYMOUS_MESSAGE_FRAME = 2;
 const SERVICE_FRAME = 3;
@@ -18,9 +10,9 @@ const SERVICE_FRAME = 3;
 
 function parseExtendedFrame(string) {
   let identifier = string.substr(0, 8);
-  let dataLength = Number(string.substr(8, 1));
+  let dataLength = string.substr(8, 1);
   let data = string.substr(9);
-  let header = BigInt(`0x${identifier}`) >> n3;
+  let header = `0x${identifier}` >> n3;
   let result = parseHeader(header);
   result.data = data;
   result.dataLength = dataLength;
@@ -34,23 +26,23 @@ function parseHeader(header) {
   let type = getType(header);
   let toReturn = {
     messageType: type,
-    priority: Number((header >> BigInt(28)) & BigInt(5)),
-    isService: Number((header >> BigInt(7)) & n1),
-    sourceNodeID: Number(header & n127)
+    priority: (header >> 28) & 5,
+    isService: (header >> 7) & 1,
+    sourceNodeID: header & 127
   };
   toReturn.messageTypeDescription = getMessageTypeLabel(type);
   switch (type) {
     case ANONYMOUS_MESSAGE_FRAME:
-      toReturn.messageTypeID = Number((header >> BigInt(8)) & n65535);
+      toReturn.messageTypeID = (header >> 8) & 65535;
       break;
     case MESSAGE_FRAME:
-      toReturn.discriminator = Number((header >> BigInt(10)) & BigInt(16383));
-      toReturn.messageTypeID = Number((header >> BigInt(8)) & n3);
+      toReturn.discriminator = (header >> 10) & 16383;
+      toReturn.messageTypeID = (header >> 8) & 3;
       break;
     case SERVICE_FRAME:
-      toReturn.serviceTypeID = Number((header >> BigInt(16)) & n255);
-      toReturn.isRequest = Number((header >> BigInt(15)) & n1);
-      toReturn.destinationNodeID = Number((header >> BigInt(8)) & n127);
+      toReturn.serviceTypeID = (header >> 16) & 255;
+      toReturn.isRequest = (header >> 15) & 1;
+      toReturn.destinationNodeID = (header >> 8) & 127;
       break;
     default:
   }
@@ -58,10 +50,10 @@ function parseHeader(header) {
 }
 
 function getType(header) {
-  if ((header & n255) === n0) {
+  if ((header & 255) === 0) {
     return ANONYMOUS_MESSAGE_FRAME;
   }
-  if (header & n128) return MESSAGE_FRAME;
+  if (header & 128) return MESSAGE_FRAME;
   return SERVICE_FRAME;
 }
 
@@ -75,4 +67,7 @@ function getMessageTypeLabel(messageType) {
       return 'Service frame';
     default:
   }
+  return '';
 }
+
+function parsePayload(data) {}
