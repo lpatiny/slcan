@@ -18,7 +18,7 @@ const SERVICE_FRAME = 3;
 
 function parseExtendedFrame(string) {
   let identifier = string.substr(0, 8);
-  let dataLength = string.substr(8, 1);
+  let dataLength = Number(string.substr(8, 1));
   let data = string.substr(9);
   let header = BigInt(`0x${identifier}`) >> n3;
   let result = parseHeader(header);
