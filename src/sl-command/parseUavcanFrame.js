@@ -21,6 +21,15 @@ function parseUavcanFrame(string) {
   let tailByte = Number(`0x${data.substring(data.length - 2)}`);
   result.data = data.substring(0, data.length - 2);
   result = Object.assign(result, parseTailByte(tailByte));
+
+  debug(
+    `${result.messageTypeDescription} src:${result.sourceNodeID} dst:${
+      result.destinationNodeID
+    } dataType:${result.dataTypeID} first:${result.startTransfer} last:${
+      result.endTransfer
+    } toggle:${result.toggleBit} nb:${result.transferID}`
+  );
+
   return result;
 }
 
@@ -50,11 +59,7 @@ function parseHeader(header) {
       break;
     default:
   }
-  debug(
-    `${toReturn.messageTypeDescription} src:${toReturn.sourceNodeID} dst:${
-      toReturn.destinationNodeID
-    } dataType:${toReturn.dataTypeID}`
-  );
+
   return toReturn;
 }
 

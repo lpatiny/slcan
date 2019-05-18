@@ -16,6 +16,7 @@ class Node {
     this.transferID = 0;
     this.toggleBit = false;
     this.adapter = adapter;
+    this.data = new Array(32);
   }
 
   sendRequest(data, dataTypeFullID, destinationNodeID) {

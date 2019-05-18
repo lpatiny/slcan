@@ -32,12 +32,8 @@ function serializeUavcanFrane(bytes, sourceNode, options = {}) {
       .toString(16)
       .padStart(2, '0');
 
-    results.push(`T${header}${data.length}${data}${tailByte}`);
+    results.push(`T${header}${data.length + 1}${data}${tailByte}`);
   }
-  for (let result of results) {
-    debug(`packets: ${result}`);
-  }
-
   return results;
 }
 

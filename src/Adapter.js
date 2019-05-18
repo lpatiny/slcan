@@ -53,9 +53,10 @@ class Adapter extends EventEmitter {
     this.status = STATUS_ERROR;
   }
 
-  data(data) {
-    debug(`Data ${this.portName}: ${data}`);
-    processReceivedData(data, this);
+  data(buffer) {
+    let string = new TextDecoder().decode(buffer).trim();
+    debug(`Data ${this.portName}: ${string}`);
+    processReceivedData(string, this);
   }
 
   update(sourceNodeID) {
@@ -68,7 +69,8 @@ class Adapter extends EventEmitter {
   write(strings) {
     if (!Array.isArray(strings)) strings = [strings];
     for (let string of strings) {
-      this.serialPort.write(string);
+      debug(`Write serial frame: ${string}`);
+      this.serialPort.write(`${string}\r`);
     }
   }
 }
