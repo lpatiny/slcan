@@ -3,6 +3,7 @@
 const EventEmitter = require('events');
 
 const updateNodeInfo = require('./updateNodeInfo');
+const getValue = require('./getValue');
 const Node = require('./Node');
 
 const debug = require('debug')('slcan.adapter');
@@ -32,7 +33,8 @@ class Adapter extends EventEmitter {
     serialPort.on('error', (error) => this.error(error));
     serialPort.on('close', (close) => this.close(close));
 
-    updateNodeInfo(this);
+    getValue(this);
+    // updateNodeInfo(this);
   }
 
   async open() {
@@ -54,7 +56,7 @@ class Adapter extends EventEmitter {
   }
 
   data(buffer) {
-    let string = new TextDecoder().decode(buffer).trim();
+    let string = new TextDecoder().decode(buffer);
     debug(`Data ${this.portName}: ${string}`);
     processReceivedData(string, this);
   }

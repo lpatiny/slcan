@@ -55,7 +55,7 @@ class Node {
     }
     let bytes = serialize(data, dataType, isService, isRequestIsAnonymous);
     if (bytes.length > 7) {
-      // add HASH + bytes CRC
+      // TODO add HASH + bytes CRC
     }
     return bytes;
   }

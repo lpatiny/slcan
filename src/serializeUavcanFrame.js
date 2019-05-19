@@ -31,8 +31,7 @@ function serializeUavcanFrane(bytes, sourceNode, options = {}) {
     )
       .toString(16)
       .padStart(2, '0');
-
-    results.push(`T${header}${data.length + 1}${data}${tailByte}`);
+    results.push(`T${header}${data.length / 2 + 1}${data}${tailByte}`);
   }
   return results;
 }
