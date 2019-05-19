@@ -1,7 +1,5 @@
 'use strict';
 
-const EventEmitter = require('events');
-
 const updateNodeInfo = require('./updateNodeInfo');
 const getValue = require('./getValue');
 const Node = require('./Node');
@@ -15,14 +13,14 @@ const STATUS_OPENED = 2;
 const STATUS_CLOSED = 3;
 const STATUS_ERROR = 10;
 
-class Adapter extends EventEmitter {
-  constructor(portName, serialPort, options = {}) {
-    super();
+class Adapter {
+  constructor(portName, serialPort, slcanEventEmitter, options = {}) {
     const { nodeID = 127 } = options;
     this.status = STATUS_OPENING;
     this.portName = portName;
     this.serialPort = serialPort;
     this.nodes = {};
+    this.slcanEventEmitter = slcanEventEmitter;
 
     if (!isNaN(nodeID)) {
       this.adapterNode = new Node(nodeID, this);
@@ -42,23 +40,39 @@ class Adapter extends EventEmitter {
     this.serialPort.write('S3\r');
     this.serialPort.write('O\r');
     this.status = STATUS_OPENED;
+    this.slcanEventEmitter.emit('adapter', {
+      event: 'Open',
+      value: {}
+    });
   }
 
   close() {
     debug(`Close ${this.portName}`);
     this.status = STATUS_CLOSED;
+    this.slcanEventEmitter.emit('adapter', {
+      event: 'Close',
+      value: {}
+    });
   }
 
   error(error) {
     debug(`Error ${this.portName}`);
     debug(error);
     this.status = STATUS_ERROR;
+    this.slcanEventEmitter.emit('adapter', {
+      event: 'Error',
+      value: error
+    });
   }
 
   data(buffer) {
     let string = new TextDecoder().decode(buffer);
     debug(`Data ${this.portName}: ${string}`);
     processReceivedData(string, this);
+    this.slcanEventEmitter.emit('adapter', {
+      event: 'received',
+      value: string
+    });
   }
 
   update(sourceNodeID) {
