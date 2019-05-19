@@ -21,20 +21,30 @@ class Node {
 
   sendRequest(data, dataTypeFullID, destinationNodeID) {
     let bytes = this.getBytes(data, dataTypeFullID, true, true);
+    if (bytes.length > 7) {
+      console.log('Can not send multiframe data');
+    }
     let info = {
       sourceNodeID: this.nodeID,
       destinationNodeID,
       priority: 31,
+      isService: true,
       isRequest: true,
       dataTypeID: dataTypes[dataTypeFullID].info.dataTypeID,
       messageType: SERVICE_FRAME
     };
-    let text = serializeUavcanFrane(bytes, this, info);
-    this.adapter.slcanEventEmitter.emit('frame', {
-      event: 'TX',
-      value: info
-    });
-    this.adapter.write(text);
+    let frames = serializeUavcanFrane(bytes, this, info);
+    for (let frame of frames) {
+      let text =
+        `T${frame.header}${frame.dataLength}${frame.data}${frame.tailByte}`;
+      console.log(text);
+      let value = Object.assign(frame, info);
+      this.adapter.write(text);
+      this.adapter.slcanEventEmitter.emit('frame', {
+        event: 'TX',
+        value
+      });
+    }
   }
 
   sendResponse(data, dataTypeID, nodeTo) {

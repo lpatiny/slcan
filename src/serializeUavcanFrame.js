@@ -8,11 +8,12 @@ const {
   SERVICE_FRAME
 } = require('./MessageTypes');
 
-function serializeUavcanFrane(bytes, sourceNode, options = {}) {
+function serializeUavcanFrame(bytes, sourceNode, options = {}) {
+  sourceNode.transferID = (sourceNode.transferID + 1) % 32;
   options = Object.assign({}, options);
   let header = serializeHeader(options);
 
-  let results = [];
+  let frames = [];
   for (let i = 0; i < bytes.length || i === 0; i += 7) {
     let data = '';
     let j = i;
@@ -22,7 +23,7 @@ function serializeUavcanFrane(bytes, sourceNode, options = {}) {
         .padStart(2, '0');
     }
     sourceNode.toggleBit = !sourceNode.toggleBit;
-    sourceNode.transferID = sourceNode.transferID++ % 32;
+
     let tailByte = (
       ((i === 0) << 7) |
       ((j === bytes.length) << 6) |
@@ -31,12 +32,21 @@ function serializeUavcanFrane(bytes, sourceNode, options = {}) {
     )
       .toString(16)
       .padStart(2, '0');
-    results.push(`T${header}${data.length / 2 + 1}${data}${tailByte}`);
+    frames.push({
+      startTransfer: i === 0,
+      endTransfer: j === bytes.length,
+      toggleBit: sourceNode.toggleBit,
+      transferID: sourceNode.transferID,
+      dataLength: data.length / 2 + 1,
+      data: data,
+      tailByte: tailByte,
+      header
+    });
   }
-  return results;
+  return frames;
 }
 
-module.exports = serializeUavcanFrane;
+module.exports = serializeUavcanFrame;
 
 function serializeHeader(options = {}) {
   let {
