@@ -31,7 +31,7 @@ class Adapter {
     serialPort.on('error', (error) => this.error(error));
     serialPort.on('close', (close) => this.close(close));
 
-    getValue(this);
+    //  getValue(this);
     // updateNodeInfo(this);
   }
 

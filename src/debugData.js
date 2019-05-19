@@ -17,6 +17,11 @@ const {
 
 function debugData(data, messageType, dataTypeID, isRequest) {
   if (!data || !dataTypeID) return;
+
+  if (data.length > 14) {
+    let crc = data.substring(0, 4);
+    data = data.substring(4);
+  }
   let parsed;
   switch (messageType) {
     case MESSAGE_FRAME:

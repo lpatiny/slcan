@@ -38,4 +38,7 @@ async function list() {
 
 list();
 
-module.exports = slcanEventEmitter;
+module.exports = {
+  slcanEventEmitter,
+  adapters
+};

@@ -1,7 +1,7 @@
 'use strict';
 
 const debug = require('debug')('uavcan.processT');
-const crc = require('crc-can');
+const { checkCRC } = require('uavcan');
 const {
   DataTypesManager,
   parseMessage,
@@ -22,7 +22,7 @@ function processT(data, adapter) {
   let parsed = parseUavcanFrame(data);
 
   adapter.slcanEventEmitter.emit('frame', {
-    event: 'received',
+    event: 'RX',
     value: parsed
   });
 
@@ -69,37 +69,38 @@ function processMessage(parsed, adapter) {
       sourceNode.data[parsed.transferID],
       adapter
     );
-    // debugData(data, parsed.messageType, parsed.dataTypeID);
+    // debugData(sourceNode.data[parsed.transferID], parsed.messageType, parsed.dataTypeID);
   }
 }
 
 function emitUAVCAN(type, parsed, data, adapter) {
   if (!parsed.startTransfer) {
-    checkCRC(data, parsed.dataTypeID, parsed.isService);
     data = data.substring(4);
+    //  checkCRC(data, parsed.dataTypeID, parsed.isService);
   }
+
   let result;
   let dataType;
   let kind;
   switch (type) {
     case MESSAGE_FRAME:
       kind = 'Message';
-      result = parseMessage(parsed.data, parsed.dataTypeID);
+      result = parseMessage(data, parsed.dataTypeID);
       dataType = DataTypesManager.getMessageByID(parsed.dataTypeID);
       break;
     case ANONYMOUS_MESSAGE_FRAME:
       kind = 'Anonymous message';
-      result = parseMessage(parsed.data, parsed.dataTypeID);
+      result = parseMessage(data, parsed.dataTypeID);
       dataType = DataTypesManager.getMessageByID(parsed.dataTypeID);
       break;
     case SERVICE_FRAME:
       dataType = DataTypesManager.getServiceByID(parsed.dataTypeID);
       if (parsed.isRequest) {
         kind = 'Service request';
-        result = parseRequest(parsed.data, parsed.dataTypeID);
+        result = parseRequest(data, parsed.dataTypeID);
       } else {
         kind = 'Service answer';
-        result = parseResponse(parsed.data, parsed.dataTypeID);
+        result = parseResponse(data, parsed.dataTypeID);
       }
       break;
     default:
@@ -137,37 +138,16 @@ function processService(parsed, adapter) {
   }
   sourceNode.data[parsed.transferID] += parsed.data;
   if (parsed.endTransfer) {
-    emitUAVCAN(SERVICE_FRAME, parsed, parsed.data, adapter);
-    // debugData(data, parsed.messageType, parsed.dataTypeID);
+    emitUAVCAN(
+      SERVICE_FRAME,
+      parsed,
+      sourceNode.data[parsed.transferID],
+      adapter
+    );
+    debugData(
+      sourceNode.data[parsed.transferID],
+      parsed.messageType,
+      parsed.dataTypeID
+    );
   }
-}
-
-function checkCRC(data, dataTypeID, isService) {
-  let dataType;
-  if (isService) {
-    dataType = DataTypesManager.getServiceByID(dataTypeID);
-  } else {
-    dataType = DataTypesManager.getMessageByID(dataTypeID);
-  }
-  if (!dataType || !dataType.info) {
-    debug(`Can not check CRC of ${data}`);
-    return false;
-  }
-
-  let hash = dataType.info.hash
-    .split(/(..)/)
-    .filter((a) => a)
-    .map((a) => Number(`0x${a}`));
-
-  let bytes = data
-    .split(/(..)/)
-    .filter((a) => a)
-    .map((a) => Number(`0x${a}`));
-
-  let expected = bytes.slice(0, 2);
-  bytes = hash.concat(bytes.slice(2));
-  let result = crc(bytes);
-
-  // console.log({ expected, L: result % 256, H: result >> 8 });
-  return false;
 }

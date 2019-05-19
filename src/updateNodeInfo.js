@@ -16,7 +16,7 @@ async function updateNodeInfo(adapter) {
         );
       }
     }
-    await delay(5000);
+    await delay(500);
   }
 }
 

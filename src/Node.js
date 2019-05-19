@@ -21,13 +21,18 @@ class Node {
 
   sendRequest(data, dataTypeFullID, destinationNodeID) {
     let bytes = this.getBytes(data, dataTypeFullID, true, true);
-    let text = serializeUavcanFrane(bytes, this, {
+    let info = {
       sourceNodeID: this.nodeID,
       destinationNodeID,
       priority: 31,
       isRequest: true,
       dataTypeID: dataTypes[dataTypeFullID].info.dataTypeID,
       messageType: SERVICE_FRAME
+    };
+    let text = serializeUavcanFrane(bytes, this, info);
+    this.adapter.slcanEventEmitter.emit('frame', {
+      event: 'TX',
+      value: info
     });
     this.adapter.write(text);
   }
