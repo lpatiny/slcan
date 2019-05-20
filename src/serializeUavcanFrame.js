@@ -12,17 +12,16 @@ function serializeUavcanFrame(bytes, sourceNode, options = {}) {
   sourceNode.transferID = (sourceNode.transferID + 1) % 32;
   options = Object.assign({}, options);
   let header = serializeHeader(options);
-
+  sourceNode.toggleBit = 0;
   let frames = [];
   for (let i = 0; i < bytes.length || i === 0; i += 7) {
     let data = '';
     let j = i;
     for (j; j < Math.min(i + 7, bytes.length); j++) {
-      data += Number(bytes[i] & 255)
+      data += Number(bytes[j] & 255)
         .toString(16)
         .padStart(2, '0');
     }
-    sourceNode.toggleBit = !sourceNode.toggleBit;
 
     let tailByte = (
       ((i === 0) << 7) |
@@ -42,6 +41,7 @@ function serializeUavcanFrame(bytes, sourceNode, options = {}) {
       tailByte: tailByte,
       header
     });
+    sourceNode.toggleBit = !sourceNode.toggleBit;
   }
   return frames;
 }

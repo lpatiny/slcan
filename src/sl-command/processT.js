@@ -1,7 +1,7 @@
 'use strict';
 
 const debug = require('debug')('uavcan.processT');
-const { checkCRC } = require('uavcan');
+const { validateCRC } = require('uavcan');
 const {
   DataTypesManager,
   parseMessage,
@@ -73,7 +73,34 @@ function processMessage(parsed, adapter) {
   }
 }
 
+function processService(parsed, adapter) {
+  let sourceNode = adapter.nodes[parsed.sourceNodeID];
+  if (!sourceNode) {
+    debug(`ERROR: sourceNode was not found: ${parsed.sourceNodeID}`);
+  }
+  sourceNode.toggleBit = parsed.toggleBit;
+  sourceNode.transferID = parsed.transferID;
+  if (parsed.startTransfer) {
+    sourceNode.data[parsed.transferID] = '';
+  }
+  sourceNode.data[parsed.transferID] += parsed.data;
+  if (parsed.endTransfer) {
+    emitUAVCAN(
+      SERVICE_FRAME,
+      parsed,
+      sourceNode.data[parsed.transferID],
+      adapter
+    );
+    debugData(
+      sourceNode.data[parsed.transferID],
+      parsed.messageType,
+      parsed.dataTypeID
+    );
+  }
+}
+
 function emitUAVCAN(type, parsed, data, adapter) {
+  validateCRC(data, parsed.dataTypeLongID);
   if (!parsed.startTransfer) {
     data = data.substring(4);
     //  checkCRC(data, parsed.dataTypeID, parsed.isService);
@@ -124,30 +151,4 @@ function emitUAVCAN(type, parsed, data, adapter) {
     event: kind,
     value: toSend
   });
-}
-
-function processService(parsed, adapter) {
-  let sourceNode = adapter.nodes[parsed.sourceNodeID];
-  if (!sourceNode) {
-    debug(`ERROR: sourceNode was not found: ${parsed.sourceNodeID}`);
-  }
-  sourceNode.toggleBit = parsed.toggleBit;
-  sourceNode.transferID = parsed.transferID;
-  if (parsed.startTransfer) {
-    sourceNode.data[parsed.transferID] = '';
-  }
-  sourceNode.data[parsed.transferID] += parsed.data;
-  if (parsed.endTransfer) {
-    emitUAVCAN(
-      SERVICE_FRAME,
-      parsed,
-      sourceNode.data[parsed.transferID],
-      adapter
-    );
-    debugData(
-      sourceNode.data[parsed.transferID],
-      parsed.messageType,
-      parsed.dataTypeID
-    );
-  }
 }

@@ -1,7 +1,7 @@
 'use strict';
 
 const debug = require('debug')('slcan.device');
-const { dataTypes, serialize } = require('uavcan');
+const { dataTypes, serialize, prependCRC } = require('uavcan');
 
 const {
   MESSAGE_FRAME,
@@ -19,10 +19,12 @@ class Node {
     this.data = new Array(32);
   }
 
-  sendRequest(data, dataTypeFullID, destinationNodeID) {
-    let bytes = this.getBytes(data, dataTypeFullID, true, true);
+  sendRequest(data, dataTypeLongID, destinationNodeID) {
+    let bytes = this.getBytes(data, dataTypeLongID, true, true);
     if (bytes.length > 7) {
-      console.log('Can not send multiframe data');
+      console.log(bytes);
+      bytes = prependCRC(bytes, dataTypeLongID);
+      console.log(bytes);
     }
     let info = {
       sourceNodeID: this.nodeID,
@@ -30,13 +32,14 @@ class Node {
       priority: 31,
       isService: true,
       isRequest: true,
-      dataTypeID: dataTypes[dataTypeFullID].info.dataTypeID,
+      dataTypeID: dataTypes[dataTypeLongID].info.dataTypeID,
       messageType: SERVICE_FRAME
     };
     let frames = serializeUavcanFrane(bytes, this, info);
     for (let frame of frames) {
-      let text =
-        `T${frame.header}${frame.dataLength}${frame.data}${frame.tailByte}`;
+      let text = `T${frame.header}${frame.dataLength}${frame.data}${
+        frame.tailByte
+      }`;
       console.log(text);
       let value = Object.assign(frame, info);
       this.adapter.write(text);

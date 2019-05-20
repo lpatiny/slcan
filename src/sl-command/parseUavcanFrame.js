@@ -1,6 +1,7 @@
 'use strict';
 
 const debug = require('debug')('slcan.parseUavcanFrame');
+const { DataTypesManager } = require('uavcan');
 
 const {
   MESSAGE_FRAME,
@@ -47,13 +48,22 @@ function parseHeader(header) {
   switch (type) {
     case MESSAGE_FRAME:
       toReturn.dataTypeID = (header >> 8) & 65535;
+      toReturn.dataTypeLongID = DataTypesManager.getMessageByID(
+        toReturn.dataTypeID
+      ).id;
       break;
     case ANONYMOUS_MESSAGE_FRAME:
       toReturn.discriminator = (header >> 10) & 16383;
       toReturn.dataTypeID = (header >> 8) & 3;
+      toReturn.dataTypeLongID = DataTypesManager.getMessageByID(
+        toReturn.dataTypeID
+      ).id;
       break;
     case SERVICE_FRAME:
       toReturn.dataTypeID = (header >> 16) & 255;
+      toReturn.dataTypeLongID = DataTypesManager.getServiceByID(
+        toReturn.dataTypeID
+      ).id;
       toReturn.isRequest = (header >> 15) & 1;
       toReturn.destinationNodeID = (header >> 8) & 127;
       break;
