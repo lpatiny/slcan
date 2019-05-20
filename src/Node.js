@@ -22,9 +22,7 @@ class Node {
   sendRequest(data, dataTypeLongID, destinationNodeID) {
     let bytes = this.getBytes(data, dataTypeLongID, true, true);
     if (bytes.length > 7) {
-      console.log(bytes);
       bytes = prependCRC(bytes, dataTypeLongID);
-      console.log(bytes);
     }
     let info = {
       sourceNodeID: this.nodeID,
@@ -40,7 +38,6 @@ class Node {
       let text = `T${frame.header}${frame.dataLength}${frame.data}${
         frame.tailByte
       }`;
-      console.log(text);
       let value = Object.assign(frame, info);
       this.adapter.write(text);
       this.adapter.slcanEventEmitter.emit('frame', {

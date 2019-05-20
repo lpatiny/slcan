@@ -29,11 +29,4 @@ describe('parseUavcanFrame', () => {
       vendorSpecificStatusCode: 0
     });
   });
-
-  it.only('1f018cff0c0', () => {
-    let result = parseUavcanFrame('1f018cff0c0');
-    console.log('1f018cff0c0', result);
-    console.log(parseMessage(result.data, result.dataTypeID));
-    expect(42).toBe(42);
-  });
 });
