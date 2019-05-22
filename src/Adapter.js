@@ -6,7 +6,7 @@ const Node = require('./Node');
 
 const debug = require('debug')('slcan.adapter');
 
-import('@loaders.gl/polyfills')
+require('fast-text-encoding');
 
 const processReceivedData = require('./processReceivedData');
 
