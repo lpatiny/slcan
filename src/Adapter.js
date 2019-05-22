@@ -6,6 +6,8 @@ const Node = require('./Node');
 
 const debug = require('debug')('slcan.adapter');
 
+import('@loaders.gl/polyfills')
+
 const processReceivedData = require('./processReceivedData');
 
 const STATUS_OPENING = 1;
