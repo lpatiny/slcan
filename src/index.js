@@ -17,7 +17,9 @@ async function list() {
     (entry) => entry.comName && entry.comName.match(/usbmodem|ACM|AMA0/i)
   );
   for (let currentAdapter of currentAdapters) {
-    const serialPort = new SerialPort(currentAdapter.comName);
+    const serialPort = new SerialPort(currentAdapter.comName, {
+      baudrate: 115200
+    });
 
     slcanEventEmitter.emit('serial', {
       event: 'New port',
