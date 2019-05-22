@@ -18,7 +18,7 @@ async function list() {
   );
   for (let currentAdapter of currentAdapters) {
     const serialPort = new SerialPort(currentAdapter.comName, {
-      baudrate: 115200
+      baudRate: 115200
     });
 
     slcanEventEmitter.emit('serial', {
