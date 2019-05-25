@@ -126,7 +126,7 @@ function emitUAVCAN(type, parsed, data, adapter) {
         kind = 'Service request';
         result = parseRequest(data, parsed.dataTypeID);
       } else {
-        kind = 'Service answer';
+        kind = 'Service response';
         result = parseResponse(data, parsed.dataTypeID);
       }
       break;
