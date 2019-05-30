@@ -1,16 +1,10 @@
 'use strict';
 
-const EventEmitter = require('events');
-
 const SerialPort = require('serialport');
 
-const Adapter = require('./Adapter');
+const SLAdapter = require('./SLAdapter');
 
 const adapters = {};
-
-class SlcanEventEmitter extends EventEmitter {}
-
-const slcanEventEmitter = new SlcanEventEmitter();
 
 async function list() {
   let currentAdapters = (await SerialPort.list()).filter(
@@ -21,18 +15,10 @@ async function list() {
       baudRate: 115200
     });
 
-    slcanEventEmitter.emit('serial', {
-      event: 'New port',
-      value: {
-        comName: currentAdapter.comName
-      }
-    });
-
     if (!adapters[currentAdapter.comName]) {
-      adapters[currentAdapter.comName] = new Adapter(
+      adapters[currentAdapter.comName] = new SLAdapter(
         currentAdapter.comName,
-        serialPort,
-        slcanEventEmitter
+        serialPort
       );
     }
   }
@@ -41,6 +27,5 @@ async function list() {
 list();
 
 module.exports = {
-  slcanEventEmitter,
   adapters
 };
