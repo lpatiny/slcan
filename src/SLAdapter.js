@@ -1,5 +1,6 @@
 'use strict';
 
+const delay = require('delay');
 const {
   bytesToHex,
   hexToBytes,
@@ -8,8 +9,6 @@ const {
   DefaultAdapter
 } = require('uavcan');
 const debug = require('debug')('slcan.adapter');
-
-// require('fast-text-encoding');
 
 const STATUS_OPENING = 1;
 const STATUS_OPENED = 2;
@@ -32,12 +31,11 @@ class SLAdapter extends DefaultAdapter {
     serialPort.on('data', (data) => this.data(data));
     serialPort.on('error', (error) => this.error(error));
     serialPort.on('close', (close) => this.close(close));
-
-    //  getValue(this);
   }
 
   async open() {
     debug(`Open ${this.portName}`);
+    await delay(1000);
     this.serialPort.write('S3\r');
     this.serialPort.write('O\r');
     this.status = STATUS_OPENED;
