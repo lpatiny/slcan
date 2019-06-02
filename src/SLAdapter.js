@@ -1,7 +1,7 @@
 'use strict';
 
 const delay = require('delay');
-require('fast-text-encoding');
+require('fast-text-encoding'); // polyfills TextEncoder for node 10
 
 const {
   bytesToHex,
