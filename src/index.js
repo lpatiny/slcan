@@ -1,46 +1,25 @@
 'use strict';
 
-const EventEmitter = require('events');
-
 const SerialPort = require('serialport');
 
-const Adapter = require('./Adapter');
+const SLAdapter = require('./SLAdapter');
 
-const adapters = {};
-
-class SlcanEventEmitter extends EventEmitter {}
-
-const slcanEventEmitter = new SlcanEventEmitter();
-
-async function list() {
-  let currentAdapters = (await SerialPort.list()).filter(
+async function getAdapters() {
+  let serialPortNames = (await SerialPort.list()).filter(
     (entry) => entry.comName && entry.comName.match(/usbmodem|ACM|AMA0/i)
   );
-  for (let currentAdapter of currentAdapters) {
-    const serialPort = new SerialPort(currentAdapter.comName, {
+
+  let adapters = [];
+  for (let serialPortName of serialPortNames) {
+    const serialPort = new SerialPort(serialPortName.comName, {
       baudRate: 115200
     });
 
-    slcanEventEmitter.emit('serial', {
-      event: 'New port',
-      value: {
-        comName: currentAdapter.comName
-      }
-    });
-
-    if (!adapters[currentAdapter.comName]) {
-      adapters[currentAdapter.comName] = new Adapter(
-        currentAdapter.comName,
-        serialPort,
-        slcanEventEmitter
-      );
-    }
+    adapters.push(new SLAdapter(serialPort.comName, serialPort));
   }
+  return adapters;
 }
 
-list();
-
 module.exports = {
-  slcanEventEmitter,
-  adapters
+  getAdapters
 };
