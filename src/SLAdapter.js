@@ -1,6 +1,8 @@
 'use strict';
 
 const delay = require('delay');
+require('fast-text-encoding');
+
 const {
   bytesToHex,
   hexToBytes,
