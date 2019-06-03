@@ -49,10 +49,25 @@ class SLAdapter extends DefaultAdapter {
 
   close() {
     debug(`Close ${this.portName}`);
-    this.status = STATUS_CLOSED;
-    this.emit('adapter', {
-      event: 'Close',
-      value: {}
+
+    this.serialPort.flush(() => {
+      this.serialPort.close((err) => {
+        if (err) {
+          debug('port could not be closed');
+          debug(err);
+          this.emit('adapter', {
+            event: 'closeError',
+            value: err
+          });
+        } else {
+          debug('port closed');
+          this.status = STATUS_CLOSED;
+          this.emit('adapter', {
+            event: 'closed',
+            value: {}
+          });
+        }
+      });
     });
   }
 
@@ -69,11 +84,15 @@ class SLAdapter extends DefaultAdapter {
   data(buffer) {
     let string = new TextDecoder().decode(buffer);
     debug(`Data ${this.portName}: ${string}`);
-    processReceivedData(string, this);
-    this.emit('adapter', {
-      event: 'received',
-      value: string
-    });
+    try {
+      processReceivedData(string, this);
+      this.emit('adapter', {
+        event: 'received',
+        value: string
+      });
+    } catch (e) {
+      debug(e);
+    }
   }
 
   write(strings) {

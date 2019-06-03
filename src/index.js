@@ -21,5 +21,6 @@ async function getAdapters() {
 }
 
 module.exports = {
-  getAdapters
+  getAdapters,
+  SLAdapter
 };
