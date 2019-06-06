@@ -3,7 +3,7 @@
 const delay = require('delay');
 const { Data } = require('uavcan');
 
-const { getAdapters } = require('../src');
+const { updateAdapters } = require('../src');
 
 // one UAVCAN you need to create an instance of Data in order to communicate with teh devices
 // You can construct Data from an object or a byte array
@@ -13,7 +13,7 @@ let data = new Data({}, 'uavcan.protocol.GetNodeInfo', {
 });
 
 // we retrieve all the adapters
-getAdapters().then(async (adapters) => {
+updateAdapters().then(async (adapters) => {
   // for each adapter we listen to events
   // the events can be uavcan (a decoded packet) or frame
   for (let adapter of adapters) {

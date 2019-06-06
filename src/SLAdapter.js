@@ -137,7 +137,13 @@ function processReceivedData(string, adapter) {
     debug(`processReceiveData: ${currentString}`);
     switch (type) {
       case 'T':
-        adapter.receiveFrame(currentString.substring(1));
+        //   currentString = currentString.substring(0, currentString.length - 4);
+        try {
+          adapter.receiveFrame(currentString.substring(1));
+        } catch (e) {
+          console.log(e);
+        }
+
         break;
       case '':
         debug('Received carriage return');

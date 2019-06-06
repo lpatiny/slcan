@@ -4,12 +4,12 @@ const SerialPort = require('serialport');
 
 const SLAdapter = require('./SLAdapter');
 
-async function getAdapters() {
-  let serialPortNames = (await SerialPort.list()).filter(
-    (entry) => entry.comName && entry.comName.match(/usbmodem|ACM|AMA0/i)
-  );
+let adapters = [];
 
-  let adapters = [];
+async function updateAdapters() {
+  let serialPortNames = (await SerialPort.list()).filter(
+    (entry) => entry.comName && entry.comName.match(/usbmodem|ACM|AMA0|BT328/i)
+  );
   for (let serialPortName of serialPortNames) {
     const serialPort = new SerialPort(serialPortName.comName, {
       baudRate: 115200
@@ -20,7 +20,14 @@ async function getAdapters() {
   return adapters;
 }
 
+updateAdapters();
+
 module.exports = {
+<<<<<<< Updated upstream
   getAdapters,
   SLAdapter
+=======
+  updateAdapters,
+  adapters
+>>>>>>> Stashed changes
 };
