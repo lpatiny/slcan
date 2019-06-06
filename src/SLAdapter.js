@@ -40,6 +40,7 @@ class SLAdapter extends DefaultAdapter {
     await delay(1000);
     this.serialPort.write('S3\r');
     this.serialPort.write('O\r');
+    this.serialPort.write('Z0\r');
     this.status = STATUS_OPENED;
     this.emit('adapter', {
       event: 'Open',

@@ -20,14 +20,7 @@ async function updateAdapters() {
   return adapters;
 }
 
-updateAdapters();
-
 module.exports = {
-<<<<<<< Updated upstream
-  getAdapters,
-  SLAdapter
-=======
   updateAdapters,
   adapters
->>>>>>> Stashed changes
 };

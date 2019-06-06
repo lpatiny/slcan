@@ -15,7 +15,7 @@
     "test-travis": "npm run test-coverage && npm run eslint",
     "test-only": "jest",
     "server": "node src",
-    "debug": "DEBUG=slcan.*  node src"
+    "debug": "DEBUG=slcan.*  node src/test"
   },
   "repository": {
     "type": "git",
