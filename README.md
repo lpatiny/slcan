@@ -14,15 +14,12 @@
 
 ## [API Documentation](https://cheminfo.github.io/slcan/)
 
-## Example
+## Demo
 
-```js
-const slcan = require('slcan');
-
-
-
-```
-
+* Listen to frames: `node demo/listenFrames`
+* Nodes info: `node demo/nodeInfo`
+* Nodes status: `node demo/nodeStatus`
+* Node get / set value: `node demo/setGetValue`
 
 ## License
 
