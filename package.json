@@ -2,7 +2,7 @@
   "name": "slcan",
   "version": "0.3.1",
   "description": "",
-  "main": "src/index.js",
+  "main": "src/SLAdapter.js",
   "files": [
     "lib",
     "src"
