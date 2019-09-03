@@ -1,46 +1,82 @@
 'use strict';
 
+const EventEmitter = require('events');
+
 const delay = require('delay');
 require('fast-text-encoding'); // polyfills TextEncoder for node 10
 
-const {
-  bytesToHex,
-  hexToBytes,
-  parseFrame,
-  Node,
-  DefaultAdapter
-} = require('uavcan');
+const SerialPort = require('serialport');
 const debug = require('debug')('slcan.adapter');
+
+
+const bytesToHex = require('./util/bytesToHex');
+const hexToBytes = require('./util/hexToBytes');
+
 
 const STATUS_OPENING = 1;
 const STATUS_OPENED = 2;
 const STATUS_CLOSED = 3;
 const STATUS_ERROR = 10;
 
-class SLAdapter extends DefaultAdapter {
-  constructor(portName, serialPort, options = {}) {
+class SLAdapter extends EventEmitter {
+  constructor(serialPort, baudRate, protocol) {
     super();
-    const { nodeID = 127 } = options;
+    this.baudRate = baudRate;
     this.status = STATUS_OPENING;
-    this.portName = portName;
-    this.serialPort = serialPort;
-
-    if (!isNaN(nodeID)) {
-      this.adapterNode = new Node(nodeID, this);
-    }
-
-    serialPort.on('open', (open) => this.open(open));
-    serialPort.on('data', (data) => this.data(data));
-    serialPort.on('error', (error) => this.error(error));
-    serialPort.on('close', (close) => this.close(close));
+    this.portName = serialPort;
+    this.serialPort = serialPort; // init variable
+    this.protocol = protocol;
   }
 
-  async open() {
+  frameSent(frame, text) {
+    this.emit('frame', {
+      event: 'TX',
+      value: {
+        frame,
+        text
+      }
+    });
+  }
+
+  frameReceived(frame, text) {
+    this.emit('frame', {
+      event: 'RX',
+      value: {
+        frame,
+        text
+      }
+    });
+    this.protocol.processFrame(frame, this.protocol);
+  }
+
+  async open(options) { // arg to give to the adapter
     debug(`Open ${this.portName}`);
+
+    if (this.status !== STATUS_OPENED) {
+      this.serialPort = new SerialPort(
+        this.portName,
+        {
+          baudRate: this.baudRate
+        },
+        (err) => {
+          console.log(`error: (null = noerror) ${err}`);
+          // if (err) {
+          //   //maybe need to do an await ,,,reject(err);
+        });
+    }
+
+
     await delay(1000);
+    this.serialPort.on('open', (open) => this.open(open));
+    this.serialPort.on('data', (data) => this.data(data));
+    this.serialPort.on('error', (error) => this.error(error));
+    this.serialPort.on('close', (close) => this.close(close));
+
     this.serialPort.write('S3\r');
     this.serialPort.write('O\r');
-    this.serialPort.write('Z0\r');
+    if (options) {
+      this.serialPort.write(options);
+    }
     this.status = STATUS_OPENED;
     this.emit('adapter', {
       event: 'Open',
@@ -121,12 +157,13 @@ class SLAdapter extends DefaultAdapter {
     if (payloadLength !== payload.length) {
       throw Error(`Wrong length for received frame: ${text}`);
     }
-    let frame = parseFrame(frameID, payload);
+    let frame = this.protocol.parseFrame(frameID, payload);
     this.frameReceived(frame, text);
   }
 }
 
 let leftOver = ''; // the part that was left over from previous data
+
 function processReceivedData(string, adapter) {
   // eslint-disable-next-line no-control-regex
   string = leftOver + string.replace(/\x07/g, '\x07\r');
@@ -153,10 +190,10 @@ function processReceivedData(string, adapter) {
         debug('Received ERROR');
         break;
       default:
-        console.log(`Unknown type of frame: "${currentString}"`);
+        debug(`Unknown type of frame: "${currentString}"`);
     }
   }
   leftOver = string;
 }
 
-module.exports = SLAdapter;
+module.exports = { SLAdapter };
